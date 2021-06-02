@@ -18,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^4.0.2",
-    "gulp-autoprefixer": "^6.1.0",
+    "gulp-autoprefixer": "^8.0.0",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.1.0",
@@ -29,6 +29,8 @@
     "lodash": "^4.17.21",
     "lodash.mergewith": "^4.6.2",
     "mixin-deep": "^2.0.1",
-    "set-value": "^3.0.2"
+    "postcss": "^8.3.0",
+    "set-value": "^3.0.2",
+    "yargs-parser": "^20.2.7"
   }
 }
