@@ -23,7 +23,8 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^5.0.0",
     "gulp-uglify": "^3.0.2",
-    "gulp-wait": "0.0.2"
+    "gulp-wait": "0.0.2",
+    "sass": "^1.43.2"
   },
   "dependencies": {
     "glob-parent": "^5.1.2",
