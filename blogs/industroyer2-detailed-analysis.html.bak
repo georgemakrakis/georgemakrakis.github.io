@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Industroyer2 – Detailed Analysis</title>
+</head>
+<body>
+
+<h2>Overview</h2>
+
+
+
+<p>
+<p> <b>(first appeared in: https://georgemakrakisblog.azurewebsites.net) - April 25, 2022</b> </p>    
+The security company ESET [1], in association with CERT-UA [2] has 
+identified a variation of the Industroyer malware [3]. In contrast to 
+the initial version, this sample seems to be created to target specific 
+environments due to its use of hard-coded IP addresses and configuration
+ parameters. It incorporated only the IEC-104 protocol as its preferred 
+method of communication with the targeted devices. The overall 
+functionality of the malware aims once again to perform actions against 
+the electrical sector of Ukraine.</p>
+
+
+
+<h2>Analysis</h2>
+
+
+
+<p>The malware is created to target specific ICS devices that leverage 
+the IEC 60870-5-104 protocol commonly found in the electrical sector 
+[4]. This is the only protocol that is leveraged this time compared to 
+the multitude of protocols that were accompanying the original version.</p>
+
+
+
+<p>As seen in Figure 1, the malware has been compiled on March 23, 2022,
+ at 04:07:29. This precedes the compilation of the sample that is 
+detailed in the ESET report (March 23, 2022, 06:35:32). The sample also 
+differs from the one reported by ESET in terms of the number of embedded
+ configurations. The provided sample includes three configurations 
+(Figure 2) while the one from ESET includes eight. That could indicate 
+the compromise of multiple entities from the threat actor in order to 
+achieve a greater effect. Industroyer2 can communicate with numerous 
+devices by spanning multiple threads.</p>
+
+
+<figure>
+    <img width="1010" height="571" src="images/industroyer2/file_info-300x170_vEL7.jpg" alt="" >
+    <figcaption>Figure 1: Basic information about the malware.</figcaption>
+</figure>
+
+<figure>
+    <img width="820" height="56" src="images/industroyer2/configuration_strings-768x52_vEL7.jpg" alt="">
+    <figcaption>Figure 2: The configuration strings embedded into the executable.</figcaption>
+</figure>
+
+
+<p>The malware provides two options to the user via the <strong>-t </strong>and <strong>-o </strong>parameters
+ as seen in Figure 3. The former can be used to delay the execution of 
+Industroyer2 while the latter allows to write the output in a log file 
+(Figure 4).</p>
+
+
+<figure>
+    <img loading="lazy" width="1024" height="488" src="images/industroyer2/t_option_Possible_Execution_Delay-768x366_vEL7.jpg" alt="">
+    <figcaption>Figure 3: The routines that perform the actions based on the CLI options and parameters.</figcaption>
+</figure>
+
+<figure>
+    <img loading="lazy" width="1024" height="359" src="images/industroyer2/o_option_ouput-1024x359_vEL7.jpg" alt="">
+    <figcaption>Figure 4: The output of Industroyer2 when the -o option is used.</figcaption>
+</figure>
+
+
+<p>It then proceeds with the parsing of the parameters from the 
+hard-coded strings (Figure 5). We see that the stations’ IP addresses 
+and the IEC-104 protocol port are defined in the configuration strings 
+along with some IEC-104-specific information such as ASDU (Application 
+Service Data Unit) address, Information Object Addresses (IOA) [4], and 
+the actions that will be taken against the targeted devices as seen in 
+Figure 6. Some of the fields of each configuration string that can be 
+seen immediately are the ASDU (3,2,1), a predefined number of the IOA 
+(44, 8, 16), each IOA (e.g., 130202, 1104, 1258), and an indicator of 
+which IOA is executed (e.g, 1,2,3…44). Each configuration seems to 
+follow the structure of the configuration file that was related to the 
+Industroyer version of 2016.</p>
+
+
+<figure>
+    <img loading="lazy" width="562" height="182" src="images/industroyer2/static_configs_iteration-300x97_vEL7.jpg" alt="">
+    <figcaption><br>Figure 5: The execution of the parsing of each configuration string.</figcaption>
+</figure>
+
+<figure>
+    <img loading="lazy" width="1024" height="87" src="images/industroyer2/configuration_strings_highlighted-1024x87_vEL7.jpg" alt="">
+    <figcaption>Figure 6: Some of the values in the hard-coded strings, used for the IEC-104 communication.</figcaption>
+</figure>
+
+<p>Once the parsing has finished, the malware attempts to terminate the 
+processes that have its name hard-coded in the executable and rename a 
+file provided in the configuration by adding the&nbsp;<strong>.MZ</strong>&nbsp;file
+ extension to it (Figure 6). That could have been an attempt to make 
+restoration of communications of the benign software with the devices 
+more difficult as such a rename will prevent any task or service to 
+re-launch it.</p>
+
+
+<figure>
+    <img loading="lazy" width="672" height="750" src="images/industroyer2/process_manipulation_vEL7.jpg" alt="">
+    <figcaption>Figure 7: The termination of processes and renaming of the file using the .MZ extension.</figcaption>
+</figure>
+
+
+
+<p>Industroyer2 then moves one with the creation of sockets and 
+connections with IP addresses from the configuration strings. Figure 7 
+illustrates the actions that are followed based on the IEC-104 protocol,
+ enabling the malware to test, start and stop the transfer of data.</p>
+
+
+<figure>
+    <img loading="lazy" width="513" height="655" src="images/industroyer2/IEC-104_Commands-380x380.jpg" alt="" >
+    <figcaption>Figure 8: Some of the strings that indicate the actions taken by the malware.</figcaption>
+</figure>
+
+
+<p>The threat actor seems to be in the knowledge of the targeted 
+environments as configurations include specific IOAs and actions that 
+are performed by the malware. The state of each device based on the IOA 
+can be set to either ON or OFF. Using an IEC-104 simulator provided by 
+FreyrSCADA [5] allows us to see the actions and changes of the 
+Industroyer2. Using a partial configuration of 4 IOAs that are embedded 
+in the first configuration string (Figure 9), we see that when the 
+malware is initiated the values of the IOA can be changed as it is 
+illustrated in Figure 10.</p>
+
+
+<figure>
+    <img loading="lazy" width="1024" height="170" src="images/industroyer2/partially_configO_of_IOAs.jpg" alt="" >
+    <figcaption>Figure 9: The setup of four IOAs for demonstration purposes Notice that that last four, Single Point and Double Point, are used to monitor the  changes made by Industroyer2.</figcaption>
+</figure>
+
+<figure>
+    <img loading="lazy" width="1024" height="154" src="images/industroyer2/partially_monitoring_IOA_changes-1024x154_vEL7.jpg" alt="" >
+    <figcaption>Figure 10: Monitoring of the changes made by Industroyer2.</figcaption>
+</figure>
+
+
+<p>An overview of the packet capture can be found in Figure 11. We can 
+see that the testing and start of connections take place along with the 
+issue of commands. We can also observe that the threat actor is in 
+possession of specific information about the environment since if we do 
+not provide some specific IOAs to the server simulator, the response 
+will be an unknown IOA status (UkIOA in Figure 12), something that the 
+log output does not provide information for (Figure 13).</p>
+
+
+<figure>
+    <img loading="lazy" width="1024" height="279" src="images/industroyer2/pcap_overview-1024x279_vEL7.jpg" alt="">
+    <figcaption>Figure 11: Overview of the packets captured during the execution of the malware.</figcaption>
+</figure>
+
+<figure>
+    <img loading="lazy" width="1024" height="108" src="images/industroyer2/pcap_uknown_resp-1024x108_vEL7.jpg" alt="">
+    <figcaption>Figure 12: Indicator that only some of the actions are performed while the rest provided an invalid IOA based on our lab configuration setup.</figcaption>
+</figure>
+
+
+<h2>Conclusions</h2>
+
+
+
+<p>Overall, we can see that the attackers can tailor their malware to 
+fit each targeted environment and at the same time be extremely 
+effective. Industroyer2 appears to have its industrial communications 
+capabilities properly implemented. However, a lot of similarities to the
+ first version of Industroyer such as the included debug messages, make 
+Industroyer2 detectable with the YARA rules of the 2016 variant.</p>
+
+
+
+<h2>Acknowledgements</h2>
+
+
+
+<p>Advice and input given by Cameron Williams and Scott Shoup have been a great help in the technical analysis of this sample.</p>
+
+
+
+
+
+
+
+
+</body>
+</html>
